@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="APEX">
+<meta name="theme-color" content="#0A0C10">
+<title>APEX Calisthenics</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #0A0C10;
+  --surface: #111318;
+  --card:    #16181F;
+  --card2:   #1C1F28;
+  --border:  #252830;
+  --text:    #E8EAF0;
+  --muted:   #6B7280;
+  --muted2:  #9CA3AF;
+  --push:    #F59E0B;
+  --push-d:  rgba(245,158,11,.12);
+  --push-b:  rgba(245,158,11,.28);
+  --pull:    #3B82F6;
+  --pull-d:  rgba(59,130,246,.12);
+  --pull-b:  rgba(59,130,246,.28);
+  --core:    #10B981;
+  --core-d:  rgba(16,185,129,.12);
+  --core-b:  rgba(16,185,129,.28);
+  --full:    #8B5CF6;
+  --full-d:  rgba(139,92,246,.12);
+  --full-b:  rgba(139,92,246,.28);
+  --red:     #EF4444;
+  --red-d:   rgba(239,68,68,.1);
+  --ok:      #10B981;
+  --ok-d:    rgba(16,185,129,.1);
+  --cur:     #F59E0B;
+  --safe-t:  env(safe-area-inset-top, 0px);
+  --safe-b:  env(safe-area-inset-bottom, 0px);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  font-family: 'Sora', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── HEADER ── */
+.hdr {
+  flex-shrink: 0;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: calc(var(--safe-t) + 14px) 16px 14px;
+}
+.hdr-row { display: flex; align-items: center; justify-content: space-between; }
+.hdr-title {
+  font-size: 20px; font-weight: 800; letter-spacing: -.4px;
+  background: linear-gradient(90deg, #F59E0B, #FCD34D);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.hdr-sub { font-size: 10px; color: var(--muted); margin-top: 1px; letter-spacing: .04em; }
+.week-pill {
+  display: flex; align-items: center; gap: 5px;
+  background: rgba(245,158,11,.1); border: 1px solid rgba(245,158,11,.3);
+  border-radius: 20px; padding: 4px 10px;
+  font-size: 11px; font-weight: 700; color: var(--cur);
+  font-family: 'JetBrains Mono', monospace;
+}
+.pulse { width: 5px; height: 5px; border-radius: 50%; background: var(--cur); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.8)} }
+
+/* ── BOTTOM NAV ── */
+.bnav {
+  flex-shrink: 0;
+  display: flex;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  padding-bottom: var(--safe-b);
+}
+.bnav-btn {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  gap: 3px; padding: 10px 4px; border: none; background: none;
+  cursor: pointer; transition: all .2s; position: relative;
+}
+.bnav-btn .ico { font-size: 20px; }
+.bnav-btn .lbl { font-size: 9px; font-weight: 700; letter-spacing: .04em; color: var(--muted); font-family: 'Sora', sans-serif; }
+.bnav-btn.active-push .lbl { color: var(--push); }
+.bnav-btn.active-pull .lbl { color: var(--pull); }
+.bnav-btn.active-core .lbl { color: var(--core); }
+.bnav-btn.active-full .lbl { color: var(--full); }
+.bnav-btn.active-sum  .lbl { color: var(--muted2); }
+.bnav-btn::after {
+  content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+  height: 2px; width: 0; border-radius: 2px; transition: width .2s;
+}
+.bnav-btn.active-push::after { width: 28px; background: var(--push); }
+.bnav-btn.active-pull::after { width: 28px; background: var(--pull); }
+.bnav-btn.active-core::after { width: 28px; background: var(--core); }
+.bnav-btn.active-full::after { width: 28px; background: var(--full); }
+.bnav-btn.active-sum::after  { width: 28px; background: var(--muted2); }
+
+/* ── SCROLL AREA ── */
+.scroll-area { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+
+/* ── PAGES ── */
+.page { display: none; padding: 14px 14px 24px; }
+.page.active { display: block; }
+
+/* ── DAY HEADER ── */
+.day-hdr {
+  border-radius: 20px; padding: 18px 18px 16px;
+  margin-bottom: 14px; border: 1px solid;
+}
+.day-hdr.push { background: var(--push-d); border-color: var(--push-b); }
+.day-hdr.pull { background: var(--pull-d); border-color: var(--pull-b); }
+.day-hdr.core { background: var(--core-d); border-color: var(--core-b); }
+.day-hdr.full { background: var(--full-d); border-color: var(--full-b); }
+.day-lbl { font-size: 10px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; opacity: .6; margin-bottom: 3px; }
+.day-hdr h2 { font-size: 34px; font-weight: 800; letter-spacing: -1.5px; line-height: 1; }
+.day-hdr.push h2 { color: var(--push); }
+.day-hdr.pull h2 { color: var(--pull); }
+.day-hdr.core h2 { color: var(--core); }
+.day-hdr.full h2 { color: var(--full); }
+.day-sub { font-size: 12px; color: var(--muted2); margin-top: 6px; line-height: 1.5; }
+
+/* ── EXERCISE CARD ── */
+.ex {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  margin-bottom: 10px;
+  overflow: hidden;
+  transition: border-color .2s;
+}
+.ex.open { border-color: #363944; }
+
+.ex-hdr {
+  display: flex; align-items: center; gap: 11px;
+  padding: 14px 14px 0; cursor: pointer;
+  user-select: none;
+}
+.ex-num {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700;
+  color: var(--muted); background: var(--card2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 4px 8px; flex-shrink: 0;
+}
+.ex-name { flex: 1; font-size: 14px; font-weight: 700; line-height: 1.25; }
+.ex-name span { display: block; font-size: 11px; font-weight: 500; color: var(--muted2); margin-top: 1px; }
+.ex-chevron {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: var(--card2); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; color: var(--muted); font-size: 14px;
+  transition: transform .25s cubic-bezier(.4,0,.2,1), background .2s;
+}
+.ex.open .ex-chevron { transform: rotate(90deg); background: var(--border); }
+
+.ex-chips {
+  display: flex; gap: 7px; padding: 10px 14px; flex-wrap: wrap;
+}
+.chip {
+  border-radius: 9px; padding: 5px 11px; font-size: 11px; font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+}
+.chip.sets { background: rgba(245,158,11,.1); border: 1px solid rgba(245,158,11,.25); color: var(--cur); }
+.chip.tempo { background: var(--card2); border: 1px solid var(--border); color: var(--muted2); font-size: 10px; }
+
+.ex-body { display: none; }
+.ex.open .ex-body { display: block; }
+
+/* tips */
+.ex-tips { padding: 2px 14px 12px; border-top: 1px solid var(--border); }
+.tip {
+  display: flex; gap: 9px; align-items: flex-start;
+  padding: 7px 0; border-bottom: 1px solid var(--border);
+  font-size: 13px; line-height: 1.5; color: var(--muted2);
+}
+.tip:last-child { border-bottom: none; }
+.tip-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--muted); margin-top: 8px; flex-shrink: 0; }
+.tip.warn { color: #FCA5A5; }
+.tip.warn .tip-dot { background: var(--red); }
+.tip.ok { color: #6EE7B7; }
+.tip.ok .tip-dot { background: var(--ok); }
+
+/* progression */
+.prog-wrap { border-top: 1px solid var(--border); }
+.prog-lbl {
+  padding: 8px 14px; font-size: 9px; font-weight: 700;
+  letter-spacing: .13em; text-transform: uppercase; color: var(--muted);
+  background: var(--surface);
+}
+.prog-grid { display: grid; grid-template-columns: repeat(4, 1fr); }
+.pc {
+  padding: 9px 6px; text-align: center;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.pc:nth-child(4n) { border-right: none; }
+.pc:nth-last-child(-n+4) { border-bottom: none; }
+.pc .wk { font-size: 9px; font-weight: 700; color: var(--muted); letter-spacing: .03em; margin-bottom: 3px; }
+.pc .val { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; color: var(--text); line-height: 1.35; }
+.pc.b2 { background: rgba(59,130,246,.04); }
+.pc.b2 .wk { color: var(--pull); }
+.pc.cur { background: rgba(245,158,11,.1); border-color: rgba(245,158,11,.2) !important; }
+.pc.cur .wk { color: var(--cur); font-size: 10px; }
+.pc.cur .val { color: var(--cur); }
+.pc.dl { background: rgba(107,114,128,.05); }
+.pc.dl .val { color: var(--muted2); }
+
+.ex-note {
+  padding: 9px 14px; font-size: 11px; color: var(--muted2);
+  font-style: italic; border-top: 1px solid var(--border);
+  background: var(--surface);
+}
+
+/* ── ALERT BLOCKS ── */
+.alert {
+  border-radius: 14px; padding: 12px 14px; margin-bottom: 10px;
+  border: 1px solid; font-size: 13px; line-height: 1.6;
+  display: flex; gap: 9px; align-items: flex-start;
+}
+.alert .ai { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+.alert.warn { background: var(--red-d); border-color: rgba(239,68,68,.28); color: #FCA5A5; }
+.alert.info { background: var(--pull-d); border-color: rgba(59,130,246,.22); color: #93C5FD; }
+.alert.ok   { background: var(--ok-d); border-color: rgba(16,185,129,.28); color: #6EE7B7; }
+
+/* ── ROTATOR TABLE ── */
+.rot-wrap {
+  background: var(--card); border: 1px solid rgba(239,68,68,.3);
+  border-radius: 16px; overflow: hidden; margin-bottom: 10px;
+}
+.rot-hdr-row {
+  background: rgba(239,68,68,.1); padding: 10px 14px;
+  font-size: 11px; font-weight: 800; color: #FCA5A5; letter-spacing: .05em;
+  text-transform: uppercase;
+}
+.rot-row { display: flex; border-top: 1px solid var(--border); }
+.rot-cell { padding: 11px 12px; font-size: 12px; }
+.rot-name { flex: 2; font-weight: 700; color: var(--text); }
+.rot-sets { flex: 1; font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--cur); }
+.rot-note { flex: 3; color: var(--muted2); font-size: 11px; line-height: 1.4; }
+
+/* ── DEAD HANG ── */
+.dh-card {
+  background: var(--pull-d); border: 1px solid var(--pull-b);
+  border-radius: 16px; padding: 14px 16px; margin-bottom: 10px;
+}
+.dh-card h4 { font-size: 14px; font-weight: 800; color: var(--pull); margin-bottom: 8px; }
+.dh-prog { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--muted2); line-height: 1.9; }
+.dh-prog .cur-line { color: var(--cur); font-weight: 700; }
+.dh-note { margin-top: 9px; font-size: 11px; color: var(--muted); }
+
+/* ── SKIP NOTICE ── */
+.skip {
+  background: rgba(107,114,128,.06); border: 1px dashed var(--border);
+  border-radius: 12px; padding: 11px 14px; margin-bottom: 10px;
+  font-size: 12px; color: var(--muted); font-style: italic;
+}
+
+/* ── SECTION TITLE ── */
+.sec-title {
+  font-size: 10px; font-weight: 700; letter-spacing: .13em;
+  text-transform: uppercase; color: var(--muted); margin: 18px 0 10px;
+}
+
+/* ── SUMMARY PAGE ── */
+.sum-item {
+  display: flex; gap: 12px; align-items: flex-start;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 14px; padding: 13px 14px; margin-bottom: 8px;
+}
+.sum-badge {
+  width: 30px; height: 30px; border-radius: 9px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 14px;
+}
+.sum-badge.ok   { background: var(--ok-d); }
+.sum-badge.warn { background: var(--red-d); }
+.sum-t { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
+.sum-d { font-size: 12px; color: var(--muted2); line-height: 1.45; }
+
+.rule-item {
+  display: flex; gap: 12px; align-items: flex-start;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 12px 14px; margin-bottom: 7px;
+}
+.rule-n { font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; color: var(--pull); flex-shrink: 0; width: 18px; }
+.rule-t { font-size: 13px; line-height: 1.5; color: var(--muted2); }
+.rule-t strong { color: var(--cur); }
+
+/* ── INSTALL BANNER ── */
+#install-banner {
+  display: none; position: fixed; bottom: 0; left: 0; right: 0;
+  background: var(--card); border-top: 1px solid var(--border);
+  padding: 12px 16px calc(12px + var(--safe-b));
+  z-index: 999;
+}
+#install-banner.show { display: block; }
+.install-row { display: flex; align-items: center; gap: 12px; }
+.install-icon { font-size: 28px; }
+.install-text h4 { font-size: 13px; font-weight: 700; }
+.install-text p { font-size: 11px; color: var(--muted2); margin-top: 2px; }
+.install-btns { display: flex; gap: 8px; margin-top: 10px; }
+.btn-install {
+  flex: 1; padding: 10px; border-radius: 12px; border: none;
+  font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer;
+}
+.btn-install.primary { background: var(--cur); color: #000; }
+.btn-install.secondary { background: var(--card2); color: var(--muted2); }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-row">
+    <div>
+      <div class="hdr-title">APEX</div>
+      <div class="hdr-sub">CALISTHENICS · WERSJA 2.0</div>
+    </div>
+    <div class="week-pill"><span class="pulse"></span>TYG. 3</div>
+  </div>
+</div>
+
+<!-- SCROLL AREA -->
+<div class="scroll-area">
+
+  <!-- ══ PUSH ══ -->
+  <div class="page active" id="page-push">
+    <div class="day-hdr push">
+      <div class="day-lbl">Dzień A — Poniedziałek</div>
+      <h2>PUSH</h2>
+      <div class="day-sub">Klatka · Triceps · Nauka ring dip · Rotator barku</div>
+    </div>
+
+    <!-- A1 -->
+    <div class="ex" id="a1">
+      <div class="ex-hdr" onclick="tog('a1')">
+        <div class="ex-num">A1</div>
+        <div class="ex-name">Pompki głębokie<span>na książkach / niskich poręczach</span></div>
+        <div class="ex-chevron">›</div>
+      </div>
+      <div class="ex-chips">
+        <div class="chip sets">4 × 8–12  RIR-2</div>
+        <div class="chip tempo">4-1-2</div>
+      </div>
+      <div class="ex-body">
+        <div class="ex-tips">
+          <div class="tip"><div class="tip-dot"></div><div>Rozstaw nieco szerszy niż barki. Klatka PONIŻEJ poziomu dłoni na dole.</div></div>
+          <div class="tip"><div class="tip-dot"></div><div>ZEJŚCIE 4 sek → PAUZA 1 sek → WEJŚCIE 2 sek. Bez skrótów.</div></div>
+          <div class="tip"><div class="tip-dot"></div><div>Wypychaj się przez pięty dłoni — kontrolowane prostowanie łokci.</div></div>
+        </div>
+        <div class="prog-wrap">
+          <div class="prog-lbl">Progresja tygodniowa</div>
+          <div class="prog-grid">
+            <div class="pc"><div class="wk">Tyg. 1</div><div class="val">3×6<br>RIR-2</div></div>
+            <div class="pc"><div class="wk">Tyg. 2</div><div class="val">3×8<br>RIR-2</div></div>
+            <div class="pc cur"><div class="wk">★ Tyg. 3</div><div class="val">4×8<br>RIR-2</div></div>
+            <div class="pc dl"><div class="wk">Tyg. 4 🔽</div><div class="val">2×6</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 5</div><div class="val">4×8<br>RIR-2</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 6</div><div class="val">4×10<br>RIR-2</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 7</div><div class="val">4×12<br>RIR-2</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 8 🏁</div><div class="val">3×8</div></div>
+          </div>
+        </div>
+        <div class="ex-note">ℹ️  Przerwa: 2 min — główne ćwiczenie dnia</div>
+      </div>
+    </div>
+
+    <!-- A2 -->
+    <div class="ex" id="a2">
+      <div class="ex-hdr" onclick="tog('a2')">
+        <div class="ex-num">A2</div>
+        <div class="ex-name">Diamond push-up<span>pompki diamentowe</span></div>
+        <div class="ex-chevron">›</div>
+      </div>
+      <div class="ex-chips">
+        <div class="chip sets">3 × 8–12  RIR-2</div>
+        <div class="chip tempo">3-0-2</div>
+      </div>
+      <div class="ex-body">
+        <div class="ex-tips">
+          <div class="tip"><div class="tip-dot"></div><div>Dłonie złączone pod klatką — kciuki i palce tworzą romb.</div></div>
+          <div class="tip warn"><div class="tip-dot"></div><div>Nadgarstki bolą → 10× kółka przed serią lub rób na pięściach.</div></div>
+          <div class="tip"><div class="tip-dot"></div><div>Łokcie blisko ciała przez cały ruch — nie rozjeżdżają się.</div></div>
+          <div class="tip"><div class="tip-dot"></div><div>Napnij core, pośladki i uda — stabilizacja ciała przez cały czas.</div></div>
+        </div>
+        <div class="prog-wrap">
+          <div class="prog-lbl">Progresja tygodniowa</div>
+          <div class="prog-grid">
+            <div class="pc"><div class="wk">Tyg. 1</div><div class="val">3×6<br>RIR-2</div></div>
+            <div class="pc"><div class="wk">Tyg. 2</div><div class="val">3×8<br>RIR-2</div></div>
+            <div class="pc cur"><div class="wk">★ Tyg. 3</div><div class="val">3×10<br>RIR-2</div></div>
+            <div class="pc dl"><div class="wk">Tyg. 4 🔽</div><div class="val">2×6</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 5</div><div class="val">3×10<br>RIR-2</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 6</div><div class="val">3×12<br>RIR-2</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 7</div><div class="val">4×10<br>RIR-2</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 8</div><div class="val">3×10</div></div>
+          </div>
+        </div>
+        <div class="ex-note">ℹ️  Przerwa: 90 sek</div>
+      </div>
+    </div>
+
+    <!-- A3 -->
+    <div class="ex" id="a3">
+      <div class="ex-hdr" onclick="tog('a3')">
+        <div class="ex-num">A3</div>
+        <div class="ex-name">Ring negative dip<span>nauka — samo zejście</span></div>
+        <div class="ex-chevron">›</div>
+      </div>
+      <div class="ex-chips">
+        <div class="chip sets">2 × 2–3</div>
+        <div class="chip tempo">5-0-0</div>
+      </div>
+      <div class="ex-body">
+        <div class="ex-tips">
+          <div class="tip"><div class="tip-dot"></div><div>START: ring support hold — ramiona proste, kółka przy biodrach.</div></div>
+          <div class="tip"><div class="tip-dot"></div><div>ZEJŚCIE 5 sek powoli. Wejście z pomocą nóg lub zeskakujesz.</div></div>
+          <div class="tip warn"><div class="tip-dot"></div><div>Nie więcej niż plan — nawet jeśli czujesz się dobrze.</div></div>
+        </div>
+        <div class="prog-wrap">
+          <div class="prog-lbl">Progresja tygodniowa</div>
+          <div class="prog-grid">
+            <div class="pc"><div class="wk">Tyg. 1</div><div class="val">2×2<br>5sek</div></div>
+            <div class="pc"><div class="wk">Tyg. 2</div><div class="val">2×2<br>5sek</div></div>
+            <div class="pc cur"><div class="wk">★ Tyg. 3</div><div class="val">2×3<br>5sek</div></div>
+            <div class="pc dl"><div class="wk">Tyg. 4 🔽</div><div class="val">2×2<br>5sek</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 5</div><div class="val">3×3<br>4sek</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 6</div><div class="val">3×3<br>4sek</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 7</div><div class="val">3×4<br>3sek</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 8</div><div class="val">3×4<br>3sek</div></div>
+          </div>
+        </div>
+        <div class="ex-note">ℹ️  Przerwa: 3 min</div>
+      </div>
+    </div>
+
+    <!-- A4 -->
+    <div class="ex" id="a4">
+      <div class="ex-hdr" onclick="tog('a4')">
+        <div class="ex-num">A4</div>
+        <div class="ex-name">Tricep dip na krześle</div>
+        <div class="ex-chevron">›</div>
+      </div>
+      <div class="ex-chips">
+        <div class="chip sets">2 × 10–15  RIR-2</div>
+        <div class="chip tempo">3-0-1</div>
+      </div>
+      <div class="ex-body">
+        <div class="ex-tips">
+          <div class="tip"><div class="tip-dot"></div><div>Ręce za ciałem na krawędzi krzesła, palce do przodu.</div></div>
+          <div class="tip"><div class="tip-dot"></div><div>Łokcie PROSTO do tyłu — nie rozjeżdżają się.</div></div>
+          <div class="tip ok"><div class="tip-dot"></div><div>Myśl: "wypycham przez łokcie do góry" — tak czujesz tricepsa.</div></div>
+          <div class="tip"><div class="tip-dot"></div><div>Tyg. 1–4: nogi ugięte. Tyg. 5+: nogi proste.</div></div>
+        </div>
+        <div class="prog-wrap">
+          <div class="prog-lbl">Progresja tygodniowa</div>
+          <div class="prog-grid">
+            <div class="pc"><div class="wk">Tyg. 1</div><div class="val">2×8<br>RIR-2</div></div>
+            <div class="pc"><div class="wk">Tyg. 2</div><div class="val">2×10<br>RIR-2</div></div>
+            <div class="pc cur"><div class="wk">★ Tyg. 3</div><div class="val">2×12<br>RIR-2</div></div>
+            <div class="pc dl"><div class="wk">Tyg. 4 🔽</div><div class="val">2×8</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 5</div><div class="val">3×10<br>proste</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 6</div><div class="val">3×12<br>proste</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 7</div><div class="val">3×15<br>RIR-2</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 8</div><div class="val">3×12</div></div>
+          </div>
+        </div>
+        <div class="ex-note">ℹ️  Przerwa: 90 sek</div>
+      </div>
+    </div>
+
+    <!-- ROTATOR -->
+    <div class="alert warn"><span class="ai">⚠️</span><div><strong>ROTATOR BARKU — OBOWIĄZKOWO po każdym Push</strong></div></div>
+    <div class="rot-wrap">
+      <div class="rot-hdr-row">⚠  Band pull-apart + Sleeper stretch</div>
+      <div class="rot-row">
+        <div class="rot-cell rot-name">Band pull-apart</div>
+        <div class="rot-cell rot-sets">2 × 15</div>
+        <div class="rot-cell rot-note">Guma poziomo, rozciągaj do szerokości barków.</div>
+      </div>
+      <div class="rot-row">
+        <div class="rot-cell rot-name" style="font-weight:700">Sleeper stretch<br><span style="font-weight:400;color:var(--muted2)">PRAWY BARK</span></div>
+        <div class="rot-cell rot-sets">2 × 30s</div>
+        <div class="rot-cell rot-note">Leżysz na prawym boku, lewa ręka dociska prawe przedramię w dół.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PULL ══ -->
+  <div class="page" id="page-pull">
+    <div class="day-hdr pull">
+      <div class="day-lbl">Dzień B — Wtorek</div>
+      <h2>PULL</h2>
+      <div class="day-sub">Plecy · Biceps · Chwyt · Kółka</div>
+    </div>
+
+    <div class="alert warn"><span class="ai">⚠️</span><div><strong>Chwyt = słaby punkt.</strong> B7 Dead hang rób ZAWSZE — nawet jeśli ominiesz inne ćwiczenia.</div></div>
+
+    <!-- B1 -->
+    <div class="ex" id="b1">
+      <div class="ex-hdr" onclick="tog('b1')">
+        <div class="ex-num">B1</div>
+        <div class="ex-name">Pull-up z gumą<span>nachwyt — overhand</span></div>
+        <div class="ex-chevron">›</div>
+      </div>
+      <div class="ex-chips">
+        <div class="chip sets">4 × 4–5  RIR-2</div>
+        <div class="chip tempo">2-0-2</div>
+      </div>
+      <div class="ex-body">
+        <div class="ex-tips">
+          <div class="tip ok"><div class="tip-dot"></div><div>Duża guma Blok 1 (tyg. 1–4). Mniejsza guma Blok 2 (tyg. 5–8).</div></div>
+          <div class="tip warn"><div class="tip-dot"></div><div>Zmniejszono z 4-6 do 4-5 — ostatnia seria wychodziła do upadku.</div></div>
+        </div>
+        <div class="prog-wrap">
+          <div class="prog-lbl">Progresja tygodniowa</div>
+          <div class="prog-grid">
+            <div class="pc"><div class="wk">Tyg. 1</div><div class="val">4×4<br>duża g.</div></div>
+            <div class="pc"><div class="wk">Tyg. 2</div><div class="val">4×5<br>duża g.</div></div>
+            <div class="pc cur"><div class="wk">★ Tyg. 3</div><div class="val">4×5<br>duża g.</div></div>
+            <div class="pc dl"><div class="wk">Tyg. 4 🔽</div><div class="val">3×4<br>duża g.</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 5</div><div class="val">4×4<br>mała g.</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 6</div><div class="val">4×5<br>mała g.</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 7</div><div class="val">4×5<br>mała g.</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 8 🏁</div><div class="val">max<br>bez g.</div></div>
+          </div>
+        </div>
+        <div class="ex-note">ℹ️  Przerwa: 2 min</div>
+      </div>
+    </div>
+
+    <!-- B2 -->
+    <div class="ex" id="b2">
+      <div class="ex-hdr" onclick="tog('b2')">
+        <div class="ex-num">B2</div>
+        <div class="ex-name">Neutral grip pull-up z gumą<span>ZMIANA — był chin-up</span></div>
+        <div class="ex-chevron">›</div>
+      </div>
+      <div class="ex-chips">
+        <div class="chip sets">3 × 4–5  RIR-2</div>
+        <div class="chip tempo">2-0-2</div>
+      </div>
+      <div class="ex-body">
+        <div class="ex-tips">
+          <div class="tip ok"><div class="tip-dot"></div><div>Twoje uchwyty neutral grip — idealne rozwiązanie.</div></div>
+          <div class="tip"><div class="tip-dot"></div><div>Angażuje bicepsa jak chin-up, ale mniej obciąża nadgarstki.</div></div>
+          <div class="tip warn"><div class="tip-dot"></div><div>Za trudno → ogranicz do 3 powtórzeń.</div></div>
+        </div>
+        <div class="prog-wrap">
+          <div class="prog-lbl">Progresja tygodniowa</div>
+          <div class="prog-grid">
+            <div class="pc"><div class="wk">Tyg. 1</div><div class="val">3×4<br>duża g.</div></div>
+            <div class="pc"><div class="wk">Tyg. 2</div><div class="val">3×5<br>duża g.</div></div>
+            <div class="pc cur"><div class="wk">★ Tyg. 3</div><div class="val">3×5<br>duża g.</div></div>
+            <div class="pc dl"><div class="wk">Tyg. 4 🔽</div><div class="val">3×4<br>duża g.</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 5</div><div class="val">3×4<br>mała g.</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 6</div><div class="val">3×5<br>mała g.</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 7</div><div class="val">3×6<br>mała g.</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 8 🏁</div><div class="val">max<br>bez g.</div></div>
+          </div>
+        </div>
+        <div class="ex-note">ℹ️  Przerwa: 90 sek</div>
+      </div>
+    </div>
+
+    <!-- B3 -->
+    <div class="ex" id="b3">
+      <div class="ex-hdr" onclick="tog('b3')">
+        <div class="ex-num">B3</div>
+        <div class="ex-name">Ring row z pufą<span>ustawienie przy ścianie</span></div>
+        <div class="ex-chevron">›</div>
+      </div>
+      <div class="ex-chips">
+        <div class="chip sets">3 × 8  RIR-2</div>
+        <div class="chip tempo">2-1-2</div>
+      </div>
+      <div class="ex-body">
+        <div class="ex-tips">
+          <div class="tip"><div class="tip-dot"></div><div>Zacznij od długości kółek 7. Co tydzień skracaj o 1 jeśli za łatwo.</div></div>
+          <div class="tip ok"><div class="tip-dot"></div><div>PAUZA U GÓRY 1 sek — ściśnij łopatki. To jest praca pleców.</div></div>
+          <div class="tip"><div class="tip-dot"></div><div>Im krótsza długość → niżej kółka → trudniej.</div></div>
+        </div>
+        <div class="prog-wrap">
+          <div class="prog-lbl">Progresja tygodniowa</div>
+          <div class="prog-grid">
+            <div class="pc"><div class="wk">Tyg. 1</div><div class="val">3×8<br>dł.7</div></div>
+            <div class="pc"><div class="wk">Tyg. 2</div><div class="val">3×9<br>dł.7</div></div>
+            <div class="pc cur"><div class="wk">★ Tyg. 3</div><div class="val">3×10<br>dł.7</div></div>
+            <div class="pc dl"><div class="wk">Tyg. 4 🔽</div><div class="val">3×7<br>dł.7</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 5</div><div class="val">3×10<br>dł.6</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 6</div><div class="val">3×10<br>dł.6</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 7</div><div class="val">3×12<br>dł.5</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 8</div><div class="val">3×10<br>dł.6</div></div>
+          </div>
+        </div>
+        <div class="ex-note">ℹ️  Przerwa: 90 sek</div>
+      </div>
+    </div>
+
+    <!-- B4 -->
+    <div class="ex" id="b4">
+      <div class="ex-hdr" onclick="tog('b4')">
+        <div class="ex-num">B4</div>
+        <div class="ex-name">Ring row eksplozywny<span>szybkie przyciągnięcie</span></div>
+        <div class="ex-chevron">›</div>
+      </div>
+      <div class="ex-chips">
+        <div class="chip sets">3 × 6–8</div>
+        <div class="chip tempo">1-0-3</div>
+      </div>
+      <div class="ex-body">
+        <div class="ex-tips">
+          <div class="tip"><div class="tip-dot"></div><div>Kółka wyżej — długość 16. Łatwiejszy kąt niż B3.</div></div>
+          <div class="tip"><div class="tip-dot"></div><div>WEJŚCIE: eksplozywnie jak najszybciej. ZEJŚCIE: powoli 3 sek.</div></div>
+        </div>
+        <div class="prog-wrap">
+          <div class="prog-lbl">Progresja tygodniowa</div>
+          <div class="prog-grid">
+            <div class="pc"><div class="wk">Tyg. 1</div><div class="val">3×6<br>dł.16</div></div>
+            <div class="pc"><div class="wk">Tyg. 2</div><div class="val">3×7<br>dł.16</div></div>
+            <div class="pc cur"><div class="wk">★ Tyg. 3</div><div class="val">3×8<br>dł.16</div></div>
+            <div class="pc dl"><div class="wk">Tyg. 4 🔽</div><div class="val">2×6</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 5</div><div class="val">3×8<br>dł.14</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 6</div><div class="val">3×9<br>dł.14</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 7</div><div class="val">3×10<br>dł.14</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 8</div><div class="val">3×8</div></div>
+          </div>
+        </div>
+        <div class="ex-note">ℹ️  Przerwa: 90 sek</div>
+      </div>
+    </div>
+
+    <!-- B5 -->
+    <div class="ex" id="b5">
+      <div class="ex-hdr" onclick="tog('b5')">
+        <div class="ex-num">B5</div>
+        <div class="ex-name">Ring support hold</div>
+        <div class="ex-chevron">›</div>
+      </div>
+      <div class="ex-chips">
+        <div class="chip sets">3 × 15–20 sek</div>
+        <div class="chip tempo">izometria</div>
+      </div>
+      <div class="ex-body">
+        <div class="ex-tips">
+          <div class="tip"><div class="tip-dot"></div><div>Ramiona PROSTE, kółka przy biodrach. Nie zginaj łokci.</div></div>
+          <div class="tip ok"><div class="tip-dot"></div><div>RTO (rings turned out) — próbowałeś i wyszło, kontynuuj.</div></div>
+          <div class="tip warn"><div class="tip-dot"></div><div>W tyg. 2 przeoczyłeś — pamiętaj w tyg. 3.</div></div>
+        </div>
+        <div class="prog-wrap">
+          <div class="prog-lbl">Progresja tygodniowa</div>
+          <div class="prog-grid">
+            <div class="pc"><div class="wk">Tyg. 1</div><div class="val">3×15s</div></div>
+            <div class="pc"><div class="wk">Tyg. 2</div><div class="val">3×18s</div></div>
+            <div class="pc cur"><div class="wk">★ Tyg. 3</div><div class="val">3×20s</div></div>
+            <div class="pc dl"><div class="wk">Tyg. 4 🔽</div><div class="val">3×12s</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 5</div><div class="val">3×25s</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 6</div><div class="val">3×28s</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 7</div><div class="val">3×30s</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 8</div><div class="val">3×30s</div></div>
+          </div>
+        </div>
+        <div class="ex-note">ℹ️  Przerwa: 90 sek</div>
+      </div>
+    </div>
+
+    <!-- B6 -->
+    <div class="ex" id="b6">
+      <div class="ex-hdr" onclick="tog('b6')">
+        <div class="ex-num">B6</div>
+        <div class="ex-name">Ring face pull<span>opcjonalne — jeśli zostało energii</span></div>
+        <div class="ex-chevron">›</div>
+      </div>
+      <div class="ex-chips">
+        <div class="chip sets">2 × 10–12</div>
+        <div class="chip tempo">2-1-2</div>
+      </div>
+      <div class="ex-body">
+        <div class="ex-tips">
+          <div class="tip"><div class="tip-dot"></div><div>Kółka na wysokości twarzy, cofasz się ~45°. Łokcie powyżej ramion.</div></div>
+          <div class="tip warn"><div class="tip-dot"></div><div>Brak siły chwytu → opuść i idź od razu do B7.</div></div>
+        </div>
+        <div class="prog-wrap">
+          <div class="prog-lbl">Progresja tygodniowa</div>
+          <div class="prog-grid">
+            <div class="pc"><div class="wk">Tyg. 1</div><div class="val">2×10</div></div>
+            <div class="pc"><div class="wk">Tyg. 2</div><div class="val">2×12</div></div>
+            <div class="pc cur"><div class="wk">★ Tyg. 3</div><div class="val">2×12</div></div>
+            <div class="pc dl"><div class="wk">Tyg. 4 🔽</div><div class="val">2×8</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 5</div><div class="val">3×12</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 6</div><div class="val">3×14</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 7</div><div class="val">3×15</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 8</div><div class="val">3×12</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- B7 Dead hang -->
+    <div class="dh-card">
+      <h4>🔵 B7 — Dead hang — OBOWIĄZKOWY</h4>
+      <div class="dh-prog">
+        Tyg. 1: 2 × 20 sek<br>
+        Tyg. 2: 2 × 25 sek<br>
+        <span class="cur-line">★ Tyg. 3: 2 × 30 sek</span><br>
+        Tyg. 5+: 3 × 30 sek
+      </div>
+      <div class="dh-note">Rób NA KOŃCU treningu — zmęczony chwyt lepiej się adaptuje.</div>
+    </div>
+  </div>
+
+  <!-- ══ CORE ══ -->
+  <div class="page" id="page-core">
+    <div class="day-hdr core">
+      <div class="day-lbl">Dzień C — Czwartek</div>
+      <h2>CORE<br>+ NOGI</h2>
+      <div class="day-sub">Brzuch · Stabilizacja · Przysiady</div>
+    </div>
+    <div class="alert info"><span class="ai">ℹ️</span><div>Uproszczono: usunięte jump squat i bulgarian. 5 ćwiczeń — mniej = większa szansa że zrobisz wszystko.</div></div>
+
+    <!-- C1 -->
+    <div class="ex" id="c1">
+      <div class="ex-hdr" onclick="tog('c1')">
+        <div class="ex-num">C1</div>
+        <div class="ex-name">Przysiad zwykły<span>goblet lub swobodny</span></div>
+        <div class="ex-chevron">›</div>
+      </div>
+      <div class="ex-chips"><div class="chip sets">2 × 20</div><div class="chip tempo">2-0-1</div></div>
+      <div class="ex-body">
+        <div class="ex-tips">
+          <div class="tip"><div class="tip-dot"></div><div>Stopy na szerokość barków, palce lekko na zewnątrz.</div></div>
+          <div class="tip"><div class="tip-dot"></div><div>Zejdź do kąta 90° — uda równolegle do podłogi.</div></div>
+          <div class="tip ok"><div class="tip-dot"></div><div>Hantla 5kg przy klatce (goblet) jeśli chcesz utrudnić.</div></div>
+        </div>
+        <div class="prog-wrap"><div class="prog-lbl">Progresja tygodniowa</div>
+          <div class="prog-grid">
+            <div class="pc"><div class="wk">Tyg. 1</div><div class="val">2×20</div></div>
+            <div class="pc"><div class="wk">Tyg. 2</div><div class="val">2×22</div></div>
+            <div class="pc cur"><div class="wk">★ Tyg. 3</div><div class="val">2×25</div></div>
+            <div class="pc dl"><div class="wk">Tyg. 4 🔽</div><div class="val">2×15</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 5</div><div class="val">3×20</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 6</div><div class="val">3×22</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 7</div><div class="val">3×25</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 8</div><div class="val">3×20</div></div>
+          </div>
+        </div>
+        <div class="ex-note">ℹ️  Przerwa: 60 sek</div>
+      </div>
+    </div>
+
+    <!-- C2 -->
+    <div class="ex" id="c2">
+      <div class="ex-hdr" onclick="tog('c2')">
+        <div class="ex-num">C2</div>
+        <div class="ex-name">Hollow body hold</div>
+        <div class="ex-chevron">›</div>
+      </div>
+      <div class="ex-chips"><div class="chip sets">2 × 15–20 sek</div><div class="chip tempo">izometria</div></div>
+      <div class="ex-body">
+        <div class="ex-tips">
+          <div class="tip warn"><div class="tip-dot"></div><div>KLUCZOWE: dolne plecy PRZYCIŚNIĘTE do podłogi przez cały czas.</div></div>
+          <div class="tip"><div class="tip-dot"></div><div>Plecy odrywają się → ugnij kolana lub unieś nogi wyżej.</div></div>
+        </div>
+        <div class="prog-wrap"><div class="prog-lbl">Progresja tygodniowa</div>
+          <div class="prog-grid">
+            <div class="pc"><div class="wk">Tyg. 1</div><div class="val">2×15s</div></div>
+            <div class="pc"><div class="wk">Tyg. 2</div><div class="val">2×20s</div></div>
+            <div class="pc cur"><div class="wk">★ Tyg. 3</div><div class="val">2×25s</div></div>
+            <div class="pc dl"><div class="wk">Tyg. 4 🔽</div><div class="val">2×15s</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 5</div><div class="val">3×25s</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 6</div><div class="val">3×30s</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 7</div><div class="val">3×35s</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 8</div><div class="val">3×40s</div></div>
+          </div>
+        </div>
+        <div class="ex-note">ℹ️  Przerwa: 60 sek</div>
+      </div>
+    </div>
+
+    <!-- C3 -->
+    <div class="ex" id="c3">
+      <div class="ex-hdr" onclick="tog('c3')">
+        <div class="ex-num">C3</div>
+        <div class="ex-name">Leg raises<span>NA PODŁODZE — nie na drążku</span></div>
+        <div class="ex-chevron">›</div>
+      </div>
+      <div class="ex-chips"><div class="chip sets">2 × 12</div><div class="chip tempo">2-1-3</div></div>
+      <div class="ex-body">
+        <div class="ex-tips">
+          <div class="tip warn"><div class="tip-dot"></div><div>ZACZNIJ NA PODŁODZE — na drążku wychodziło za słabo.</div></div>
+          <div class="tip"><div class="tip-dot"></div><div>OPUSZCZANIE 3 sek — to jest praca mięśnia, nie zrzucanie nóg.</div></div>
+          <div class="tip"><div class="tip-dot"></div><div>Nie dajesz rady powoli → ugnij kolana do 90°. To jest OK.</div></div>
+          <div class="tip ok"><div class="tip-dot"></div><div>Na drążek dopiero gdy na podłodze robisz 3×15 bez problemu.</div></div>
+        </div>
+        <div class="prog-wrap"><div class="prog-lbl">Progresja tygodniowa</div>
+          <div class="prog-grid">
+            <div class="pc"><div class="wk">Tyg. 1</div><div class="val">2×12<br>podłoga</div></div>
+            <div class="pc"><div class="wk">Tyg. 2</div><div class="val">2×14<br>podłoga</div></div>
+            <div class="pc cur"><div class="wk">★ Tyg. 3</div><div class="val">2×15<br>podłoga</div></div>
+            <div class="pc dl"><div class="wk">Tyg. 4 🔽</div><div class="val">2×10</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 5</div><div class="val">3×12<br>podłoga</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 6</div><div class="val">3×14<br>podłoga</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 7</div><div class="val">3×15<br>podłoga</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 8</div><div class="val">3×15</div></div>
+          </div>
+        </div>
+        <div class="ex-note">ℹ️  Przerwa: 90 sek</div>
+      </div>
+    </div>
+
+    <!-- C4 -->
+    <div class="ex" id="c4">
+      <div class="ex-hdr" onclick="tog('c4')">
+        <div class="ex-num">C4</div>
+        <div class="ex-name">Plank</div>
+        <div class="ex-chevron">›</div>
+      </div>
+      <div class="ex-chips"><div class="chip sets">2 × 30 sek</div><div class="chip tempo">izometria</div></div>
+      <div class="ex-body">
+        <div class="ex-tips">
+          <div class="tip"><div class="tip-dot"></div><div>Przedramiona na podłodze, łokcie pod barkami, nogi proste.</div></div>
+          <div class="tip warn"><div class="tip-dot"></div><div>Biodra na LINII — nie unosisz tyłka, nie opuszczasz bioder.</div></div>
+        </div>
+        <div class="prog-wrap"><div class="prog-lbl">Progresja tygodniowa</div>
+          <div class="prog-grid">
+            <div class="pc"><div class="wk">Tyg. 1</div><div class="val">2×30s</div></div>
+            <div class="pc"><div class="wk">Tyg. 2</div><div class="val">2×40s</div></div>
+            <div class="pc cur"><div class="wk">★ Tyg. 3</div><div class="val">2×50s</div></div>
+            <div class="pc dl"><div class="wk">Tyg. 4 🔽</div><div class="val">2×25s</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 5</div><div class="val">2×55s</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 6</div><div class="val">2×60s</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 7</div><div class="val">3×50s</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 8</div><div class="val">3×60s</div></div>
+          </div>
+        </div>
+        <div class="ex-note">ℹ️  Przerwa: 60 sek</div>
+      </div>
+    </div>
+
+    <!-- C5 -->
+    <div class="ex" id="c5">
+      <div class="ex-hdr" onclick="tog('c5')">
+        <div class="ex-num">C5</div>
+        <div class="ex-name">L-sit hold<span>opcjonalne — jeśli zostało energii</span></div>
+        <div class="ex-chevron">›</div>
+      </div>
+      <div class="ex-chips"><div class="chip sets">2 × 5–8 sek</div><div class="chip tempo">izometria</div></div>
+      <div class="ex-body">
+        <div class="ex-tips">
+          <div class="tip"><div class="tip-dot"></div><div>Między dwoma krzesłami. Tyg. 1–4: tuck (nogi ugięte, kolana przy klatce).</div></div>
+          <div class="tip"><div class="tip-dot"></div><div>Jeśli nie masz siły → opuść to ćwiczenie w tym tygodniu.</div></div>
+        </div>
+        <div class="prog-wrap"><div class="prog-lbl">Progresja tygodniowa</div>
+          <div class="prog-grid">
+            <div class="pc"><div class="wk">Tyg. 1</div><div class="val">2×5s<br>ugięte</div></div>
+            <div class="pc"><div class="wk">Tyg. 2</div><div class="val">2×8s<br>ugięte</div></div>
+            <div class="pc cur"><div class="wk">★ Tyg. 3</div><div class="val">2×10s<br>ugięte</div></div>
+            <div class="pc dl"><div class="wk">Tyg. 4 🔽</div><div class="val">2×5s</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 5</div><div class="val">3×8s<br>ugięte</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 6</div><div class="val">3×8s<br>1 noga</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 7</div><div class="val">3×10s<br>1 noga</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 8</div><div class="val">3×12s<br>1 noga</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ FULL BODY ══ -->
+  <div class="page" id="page-full">
+    <div class="day-hdr full">
+      <div class="day-lbl">Dzień D — Piątek</div>
+      <h2>FULL BODY</h2>
+      <div class="day-sub">Mix Push + Pull + Core — lżejszy dzień</div>
+    </div>
+    <div class="alert ok"><span class="ai">✅</span><div>Dzień D wyszedł dobrze — bez zmian struktury.</div></div>
+
+    <!-- D1 -->
+    <div class="ex" id="d1">
+      <div class="ex-hdr" onclick="tog('d1')">
+        <div class="ex-num">D1</div>
+        <div class="ex-name">Ring push-up<span>kółka ~20 cm nad ziemią</span></div>
+        <div class="ex-chevron">›</div>
+      </div>
+      <div class="ex-chips"><div class="chip sets">3 × 6–8  RIR-2</div><div class="chip tempo">3-0-2</div></div>
+      <div class="ex-body">
+        <div class="ex-tips">
+          <div class="tip"><div class="tip-dot"></div><div>Klatka dąży do kółek — kółka chcą się rozjechać, kontroluj.</div></div>
+          <div class="tip"><div class="tip-dot"></div><div>Zacznij od wąskiego rozstawu — łatwiej utrzymać stabilność.</div></div>
+        </div>
+        <div class="prog-wrap"><div class="prog-lbl">Progresja tygodniowa</div>
+          <div class="prog-grid">
+            <div class="pc"><div class="wk">Tyg. 1</div><div class="val">3×6<br>RIR-2</div></div>
+            <div class="pc"><div class="wk">Tyg. 2</div><div class="val">3×7<br>RIR-2</div></div>
+            <div class="pc cur"><div class="wk">★ Tyg. 3</div><div class="val">3×8<br>RIR-2</div></div>
+            <div class="pc dl"><div class="wk">Tyg. 4 🔽</div><div class="val">2×6</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 5</div><div class="val">3×9<br>RIR-2</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 6</div><div class="val">3×10<br>RIR-2</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 7</div><div class="val">3×12<br>RIR-2</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 8</div><div class="val">3×8</div></div>
+          </div>
+        </div>
+        <div class="ex-note">ℹ️  Przerwa: 90 sek</div>
+      </div>
+    </div>
+
+    <!-- D2 -->
+    <div class="ex" id="d2">
+      <div class="ex-hdr" onclick="tog('d2')">
+        <div class="ex-num">D2</div>
+        <div class="ex-name">Ring support hold</div>
+        <div class="ex-chevron">›</div>
+      </div>
+      <div class="ex-chips"><div class="chip sets">3 × 15–20 sek</div><div class="chip tempo">izometria</div></div>
+      <div class="ex-body">
+        <div class="ex-tips">
+          <div class="tip"><div class="tip-dot"></div><div>Ramiona PROSTE. RTO — próbowałeś i wyszło, kontynuuj.</div></div>
+        </div>
+        <div class="prog-wrap"><div class="prog-lbl">Progresja tygodniowa</div>
+          <div class="prog-grid">
+            <div class="pc"><div class="wk">Tyg. 1</div><div class="val">3×15s</div></div>
+            <div class="pc"><div class="wk">Tyg. 2</div><div class="val">3×18s</div></div>
+            <div class="pc cur"><div class="wk">★ Tyg. 3</div><div class="val">3×20s</div></div>
+            <div class="pc dl"><div class="wk">Tyg. 4 🔽</div><div class="val">3×12s</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 5</div><div class="val">3×25s</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 6</div><div class="val">3×28s</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 7</div><div class="val">3×30s</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 8</div><div class="val">3×30s</div></div>
+          </div>
+        </div>
+        <div class="ex-note">ℹ️  Przerwa: 90 sek</div>
+      </div>
+    </div>
+
+    <div class="skip">D3 Ring negative dip — pomijasz w całym Bloku 1 (tyg. 1–4). Wróci w tyg. 5.</div>
+
+    <!-- D4 -->
+    <div class="ex" id="d4">
+      <div class="ex-hdr" onclick="tog('d4')">
+        <div class="ex-num">D4</div>
+        <div class="ex-name">Pull-up z gumą<span>mniej serii niż Dzień B</span></div>
+        <div class="ex-chevron">›</div>
+      </div>
+      <div class="ex-chips"><div class="chip sets">3 × 3–4  RIR-2</div><div class="chip tempo">2-0-2</div></div>
+      <div class="ex-body">
+        <div class="ex-tips">
+          <div class="tip"><div class="tip-dot"></div><div>To samo co B1, ale tylko 3 serie — dzień D jest lżejszy.</div></div>
+          <div class="tip ok"><div class="tip-dot"></div><div>3×4 wyszło w tyg. 2 — dobry wynik.</div></div>
+        </div>
+        <div class="prog-wrap"><div class="prog-lbl">Progresja tygodniowa</div>
+          <div class="prog-grid">
+            <div class="pc"><div class="wk">Tyg. 1</div><div class="val">3×3<br>duża g.</div></div>
+            <div class="pc"><div class="wk">Tyg. 2</div><div class="val">3×4<br>duża g.</div></div>
+            <div class="pc cur"><div class="wk">★ Tyg. 3</div><div class="val">3×5<br>duża g.</div></div>
+            <div class="pc dl"><div class="wk">Tyg. 4 🔽</div><div class="val">2×3</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 5</div><div class="val">3×4<br>mała g.</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 6</div><div class="val">3×5<br>mała g.</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 7</div><div class="val">3×6<br>mała g.</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 8 🏁</div><div class="val">max<br>bez g.</div></div>
+          </div>
+        </div>
+        <div class="ex-note">ℹ️  Przerwa: 90 sek</div>
+      </div>
+    </div>
+
+    <!-- D5 -->
+    <div class="ex" id="d5">
+      <div class="ex-hdr" onclick="tog('d5')">
+        <div class="ex-num">D5</div>
+        <div class="ex-name">Ring row na kółkach<span>Twoje ustawienie</span></div>
+        <div class="ex-chevron">›</div>
+      </div>
+      <div class="ex-chips"><div class="chip sets">3 × 10–12  RIR-2</div><div class="chip tempo">2-1-2</div></div>
+      <div class="ex-body">
+        <div class="ex-tips">
+          <div class="tip ok"><div class="tip-dot"></div><div>Kółka dł. 6 — wyszło 12, 10, 9 w tyg. 2. Dobry wynik.</div></div>
+          <div class="tip"><div class="tip-dot"></div><div>Celuj w 3×10 z pełną kontrolą — pauza na górze, 2 sek zejście.</div></div>
+          <div class="tip"><div class="tip-dot"></div><div>Za łatwo → skróć do dł. 5.</div></div>
+        </div>
+        <div class="prog-wrap"><div class="prog-lbl">Progresja tygodniowa</div>
+          <div class="prog-grid">
+            <div class="pc"><div class="wk">Tyg. 1</div><div class="val">3×10<br>dł.6</div></div>
+            <div class="pc"><div class="wk">Tyg. 2</div><div class="val">3×12<br>dł.6</div></div>
+            <div class="pc cur"><div class="wk">★ Tyg. 3</div><div class="val">3×13<br>dł.6</div></div>
+            <div class="pc dl"><div class="wk">Tyg. 4 🔽</div><div class="val">2×10</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 5</div><div class="val">3×12<br>dł.5</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 6</div><div class="val">3×13<br>dł.5</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 7</div><div class="val">3×14<br>dł.5</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 8</div><div class="val">3×12</div></div>
+          </div>
+        </div>
+        <div class="ex-note">ℹ️  Przerwa: 90 sek</div>
+      </div>
+    </div>
+
+    <!-- D6 -->
+    <div class="ex" id="d6">
+      <div class="ex-hdr" onclick="tog('d6')">
+        <div class="ex-num">D6</div>
+        <div class="ex-name">Hollow body hold</div>
+        <div class="ex-chevron">›</div>
+      </div>
+      <div class="ex-chips"><div class="chip sets">3 × 15–20 sek</div><div class="chip tempo">izometria</div></div>
+      <div class="ex-body">
+        <div class="ex-tips">
+          <div class="tip ok"><div class="tip-dot"></div><div>3×18 sek w tyg. 2 — dobry wynik. Tyg. 3 → celuj w 3×20.</div></div>
+          <div class="tip warn"><div class="tip-dot"></div><div>Dolne plecy PRZYCIŚNIĘTE do podłogi przez cały czas.</div></div>
+        </div>
+        <div class="prog-wrap"><div class="prog-lbl">Progresja tygodniowa</div>
+          <div class="prog-grid">
+            <div class="pc"><div class="wk">Tyg. 1</div><div class="val">3×15s</div></div>
+            <div class="pc"><div class="wk">Tyg. 2</div><div class="val">3×18s</div></div>
+            <div class="pc cur"><div class="wk">★ Tyg. 3</div><div class="val">3×20s</div></div>
+            <div class="pc dl"><div class="wk">Tyg. 4 🔽</div><div class="val">3×15s</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 5</div><div class="val">3×22s</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 6</div><div class="val">3×25s</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 7</div><div class="val">3×28s</div></div>
+            <div class="pc b2"><div class="wk">Tyg. 8</div><div class="val">3×30s</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SUMMARY ══ -->
+  <div class="page" id="page-summary">
+    <div style="padding: 6px 0 18px">
+      <div style="font-size:22px;font-weight:800;letter-spacing:-.5px">Podsumowanie</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:3px">Po 2 tygodniach treningu</div>
+    </div>
+
+    <div class="sec-title">Co wyszło / co zmieniono</div>
+    <div class="sum-item"><div class="sum-badge ok">✅</div><div><div class="sum-t">Ring negative dip A3</div><div class="sum-d">Technika dobra od początku.</div></div></div>
+    <div class="sum-item"><div class="sum-badge ok">✅</div><div><div class="sum-t">Ring support hold B5/D2</div><div class="sum-d">3×15 sek i próba RTO — super progres.</div></div></div>
+    <div class="sum-item"><div class="sum-badge ok">✅</div><div><div class="sum-t">Diamond push-up</div><div class="sum-d">Lepsza technika w tyg. 2 — widoczna adaptacja.</div></div></div>
+    <div class="sum-item"><div class="sum-badge ok">✅</div><div><div class="sum-t">Ring push-up D1 + Hollow body</div><div class="sum-d">Oba ćwiczenia wychodzą dobrze.</div></div></div>
+    <div class="sum-item"><div class="sum-badge warn">⚠️</div><div><div class="sum-t">Pull-up B1</div><div class="sum-d">Zmniejszono do 4×4-5 — ostatnia seria do upadku = za ciężko.</div></div></div>
+    <div class="sum-item"><div class="sum-badge warn">⚠️</div><div><div class="sum-t">Chin-up → Neutral grip B2</div><div class="sum-d">Zmiana na neutral grip — łatwiejszy dla chwytu i nadgarstków.</div></div></div>
+    <div class="sum-item"><div class="sum-badge warn">⚠️</div><div><div class="sum-t">Ring row B3</div><div class="sum-d">3 serie zamiast 4. Długość kółek reguluje trudność.</div></div></div>
+    <div class="sum-item"><div class="sum-badge warn">⚠️</div><div><div class="sum-t">Leg raises C3</div><div class="sum-d">Zacznij na podłodze — na drążku wychodziło za słabo.</div></div></div>
+    <div class="sum-item"><div class="sum-badge warn">⚠️</div><div><div class="sum-t">Dead hang B7</div><div class="sum-d">Rób ZAWSZE na końcu Pull — buduje chwyt.</div></div></div>
+
+    <div class="sec-title">Zasady</div>
+    <div class="rule-item"><div class="rule-n">1.</div><div class="rule-t">RIR-2 ważniejszy niż liczba w tabeli — tabela to punkt startowy.</div></div>
+    <div class="rule-item"><div class="rule-n">2.</div><div class="rule-t">Jesteś w <strong>Tyg. 3</strong> (23–29 marca) — kolumna oznaczona ★.</div></div>
+    <div class="rule-item"><div class="rule-n">3.</div><div class="rule-t">Pominięty trening → wróć normalnie. Nie nadrabiaj.</div></div>
+    <div class="rule-item"><div class="rule-n">4.</div><div class="rule-t">Band pull-apart + sleeper stretch po każdym Push — 5 min, chroni bark.</div></div>
+    <div class="rule-item"><div class="rule-n">5.</div><div class="rule-t">Nadgarstki bolą przy diamond → rób na pięściach.</div></div>
+    <div class="rule-item"><div class="rule-n">6.</div><div class="rule-t">Tyg. 4 = deload — celowo mniej. Nie nadrabiaj.</div></div>
+  </div>
+
+</div><!-- /scroll-area -->
+
+<!-- BOTTOM NAV -->
+<div class="bnav">
+  <button class="bnav-btn active-push" id="btn-push" onclick="nav('push',this)">
+    <span class="ico">💪</span><span class="lbl">PUSH</span>
+  </button>
+  <button class="bnav-btn" id="btn-pull" onclick="nav('pull',this)">
+    <span class="ico">🔵</span><span class="lbl">PULL</span>
+  </button>
+  <button class="bnav-btn" id="btn-core" onclick="nav('core',this)">
+    <span class="ico">🟢</span><span class="lbl">CORE</span>
+  </button>
+  <button class="bnav-btn" id="btn-full" onclick="nav('full',this)">
+    <span class="ico">🟣</span><span class="lbl">FULL</span>
+  </button>
+  <button class="bnav-btn" id="btn-summary" onclick="nav('summary',this)">
+    <span class="ico">📋</span><span class="lbl">INFO</span>
+  </button>
+</div>
+
+<!-- INSTALL BANNER -->
+<div id="install-banner">
+  <div class="install-row">
+    <div class="install-icon">📲</div>
+    <div class="install-text">
+      <h4>Zainstaluj aplikację</h4>
+      <p>Dostęp offline, działa jak normalna app</p>
+    </div>
+  </div>
+  <div class="install-btns">
+    <button class="btn-install primary" id="btn-install-ok">Zainstaluj</button>
+    <button class="btn-install secondary" onclick="document.getElementById('install-banner').classList.remove('show')">Nie teraz</button>
+  </div>
+</div>
+
+<script>
+// ── NAV ──
+function nav(id, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.bnav-btn').forEach(b => b.className = 'bnav-btn');
+  document.getElementById('page-' + id).classList.add('active');
+  document.querySelector('.scroll-area').scrollTop = 0;
+  const map = { push:'active-push', pull:'active-pull', core:'active-core', full:'active-full', summary:'active-sum' };
+  btn.classList.add(map[id]);
+}
+
+// ── TOGGLE EXERCISE ──
+function tog(id) {
+  const el = document.getElementById(id);
+  const wasOpen = el.classList.contains('open');
+  // close siblings
+  el.closest('.page').querySelectorAll('.ex.open').forEach(e => e.classList.remove('open'));
+  if (!wasOpen) el.classList.add('open');
+}
+
+// ── SERVICE WORKER ──
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+
+// ── PWA INSTALL ──
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('install-banner').classList.add('show');
+});
+document.getElementById('btn-install-ok').addEventListener('click', () => {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(() => {
+      deferredPrompt = null;
+      document.getElementById('install-banner').classList.remove('show');
+    });
+  }
+});
+window.addEventListener('appinstalled', () => {
+  document.getElementById('install-banner').classList.remove('show');
+});
+</script>
+</body>
+</html>
